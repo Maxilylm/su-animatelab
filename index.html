@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AnimateLab — CSS Animation Playground</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1a1a24;
+      --border: #2a2a3a;
+      --text: #e0e0e8;
+      --text-dim: #8888a0;
+      --accent: #6c5ce7;
+      --accent-glow: #6c5ce740;
+      --green: #00e676;
+      --orange: #ff9800;
+      --red: #ff5252;
+      --radius: 8px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+    .header-actions { display: flex; gap: 8px; }
+
+    /* Layout */
+    .layout {
+      display: flex;
+      height: calc(100vh - 49px);
+    }
+
+    /* Left Panel */
+    .controls {
+      width: 380px;
+      min-width: 380px;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      background: var(--surface);
+    }
+    .controls::-webkit-scrollbar { width: 6px; }
+    .controls::-webkit-scrollbar-track { background: transparent; }
+    .controls::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .section {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    /* Presets */
+    .presets-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+    .preset-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+    }
+    .preset-btn:hover { border-color: var(--accent); background: #1e1e2e; }
+    .preset-btn.active { border-color: var(--accent); background: var(--accent-glow); }
+
+    /* Element Picker */
+    .element-picker {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .el-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .el-btn:hover { border-color: var(--accent); }
+    .el-btn.active { border-color: var(--accent); background: var(--accent-glow); }
+
+    /* Controls */
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .control-row label {
+      font-size: 12px;
+      color: var(--text-dim);
+      min-width: 80px;
+    }
+    .control-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+      height: 4px;
+    }
+    .control-row .value {
+      font-size: 12px;
+      color: var(--accent);
+      min-width: 40px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      flex: 1;
+      cursor: pointer;
+    }
+    select:focus { outline: none; border-color: var(--accent); }
+
+    /* Keyframes Editor */
+    .keyframes-timeline {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .timeline-bar {
+      height: 32px;
+      background: #0e0e16;
+      border-radius: 4px;
+      position: relative;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .kf-marker {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 14px;
+      height: 14px;
+      background: var(--accent);
+      border: 2px solid #fff;
+      border-radius: 50%;
+      cursor: grab;
+      z-index: 2;
+      transition: box-shadow 0.15s;
+    }
+    .kf-marker:hover, .kf-marker.active {
+      box-shadow: 0 0 8px var(--accent);
+    }
+    .kf-props {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .kf-prop {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .kf-prop label {
+      font-size: 11px;
+      color: var(--text-dim);
+      min-width: 50px;
+    }
+    .kf-prop input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      width: 70px;
+    }
+    .kf-prop input:focus { outline: none; border-color: var(--accent); }
+    .kf-actions { display: flex; gap: 6px; margin-top: 8px; }
+
+    /* Easing */
+    .easing-presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .easing-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 10px;
+      border-radius: var(--radius);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .easing-btn:hover { border-color: var(--accent); }
+    .easing-btn.active { border-color: var(--accent); background: var(--accent-glow); }
+
+    .bezier-editor {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .bezier-canvas {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: crosshair;
+    }
+    .bezier-values {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.8;
+    }
+    .bezier-values code {
+      color: var(--accent);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    /* Right Panel */
+    .preview-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+    .preview-area.fullscreen {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+    }
+
+    .preview-element {
+      transition: none;
+    }
+    .preview-element.box {
+      width: 100px;
+      height: 100px;
+      background: var(--accent);
+      border-radius: 12px;
+    }
+    .preview-element.circle {
+      width: 100px;
+      height: 100px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+    .preview-element.text {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--accent);
+      user-select: none;
+    }
+    .preview-element.button {
+      padding: 14px 32px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Grid bg */
+    .preview-area::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Code Output */
+    .code-output {
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      max-height: 200px;
+      min-height: 120px;
+      overflow-y: auto;
+      position: relative;
+    }
+    .code-output::-webkit-scrollbar { width: 6px; }
+    .code-output::-webkit-scrollbar-track { background: transparent; }
+    .code-output::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+      z-index: 1;
+    }
+    .code-header span {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+    }
+    pre {
+      padding: 12px 16px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text);
+      white-space: pre;
+      overflow-x: auto;
+    }
+    .kw { color: #c792ea; }
+    .str { color: #c3e88d; }
+    .num { color: #f78c6c; }
+    .prop { color: #82aaff; }
+    .punc { color: var(--text-dim); }
+
+    /* Buttons */
+    .btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn:hover { border-color: var(--accent); }
+    .btn-accent {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .btn-accent:hover { background: #5b4bd6; }
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+
+    .copied-toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--green);
+      color: #000;
+      padding: 8px 20px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .copied-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .direction-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>Animate</span>Lab</div>
+  <div class="header-actions">
+    <button class="btn" id="resetBtn">Reset</button>
+    <button class="btn" id="fullscreenBtn">Fullscreen</button>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="controls">
+
+    <!-- Presets -->
+    <div class="section">
+      <div class="section-title">Presets</div>
+      <div class="presets-grid" id="presetsGrid"></div>
+    </div>
+
+    <!-- Target Element -->
+    <div class="section">
+      <div class="section-title">Target Element</div>
+      <div class="element-picker" id="elementPicker">
+        <button class="el-btn active" data-el="box">Box</button>
+        <button class="el-btn" data-el="circle">Circle</button>
+        <button class="el-btn" data-el="text">Text</button>
+        <button class="el-btn" data-el="button">Button</button>
+      </div>
+    </div>
+
+    <!-- Animation Properties -->
+    <div class="section">
+      <div class="section-title">Animation Properties</div>
+      <div class="control-row">
+        <label>Duration</label>
+        <input type="range" id="duration" min="0.1" max="5" step="0.1" value="1" />
+        <span class="value" id="durationVal">1s</span>
+      </div>
+      <div class="control-row">
+        <label>Delay</label>
+        <input type="range" id="delay" min="0" max="3" step="0.1" value="0" />
+        <span class="value" id="delayVal">0s</span>
+      </div>
+      <div class="control-row">
+        <label>Iterations</label>
+        <input type="range" id="iterations" min="1" max="20" step="1" value="1" />
+        <span class="value" id="iterationsVal">1</span>
+      </div>
+      <div class="control-row">
+        <label></label>
+        <label style="min-width:auto;display:flex;align-items:center;gap:4px;">
+          <input type="checkbox" id="infiniteCheck" /> Infinite
+        </label>
+      </div>
+      <div class="control-row">
+        <label>Direction</label>
+        <div class="direction-row">
+          <button class="el-btn active" data-dir="normal">Normal</button>
+          <button class="el-btn" data-dir="reverse">Reverse</button>
+          <button class="el-btn" data-dir="alternate">Alternate</button>
+          <button class="el-btn" data-dir="alternate-reverse">Alt-Rev</button>
+        </div>
+      </div>
+      <div class="control-row">
+        <label>Fill Mode</label>
+        <select id="fillMode">
+          <option value="none">none</option>
+          <option value="forwards" selected>forwards</option>
+          <option value="backwards">backwards</option>
+          <option value="both">both</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Easing -->
+    <div class="section">
+      <div class="section-title">Easing</div>
+      <div class="easing-presets" id="easingPresets">
+        <button class="easing-btn active" data-ease="ease">ease</button>
+        <button class="easing-btn" data-ease="ease-in">ease-in</button>
+        <button class="easing-btn" data-ease="ease-out">ease-out</button>
+        <button class="easing-btn" data-ease="ease-in-out">ease-in-out</button>
+        <button class="easing-btn" data-ease="linear">linear</button>
+        <button class="easing-btn" data-ease="cubic-bezier(0.68,-0.55,0.27,1.55)">bounce</button>
+        <button class="easing-btn" data-ease="custom">custom</button>
+      </div>
+      <div class="bezier-editor" id="bezierEditor" style="display:none;">
+        <canvas class="bezier-canvas" id="bezierCanvas" width="120" height="120"></canvas>
+        <div class="bezier-values">
+          P1: <code id="p1Val">(0.25, 0.10)</code><br/>
+          P2: <code id="p2Val">(0.25, 1.00)</code><br/>
+          <code id="bezierFunc">cubic-bezier(0.25, 0.1, 0.25, 1)</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keyframes -->
+    <div class="section">
+      <div class="section-title">Keyframes</div>
+      <div class="keyframes-timeline" id="keyframesEditor">
+        <div class="timeline-bar" id="timelineBar"></div>
+        <div id="kfPropsContainer"></div>
+        <div class="kf-actions">
+          <button class="btn btn-sm" id="addKfBtn">+ Add Keyframe</button>
+          <button class="btn btn-sm" id="removeKfBtn">- Remove</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Preview + Code -->
+  <div class="preview-panel">
+    <div class="preview-area" id="previewArea">
+      <div class="preview-element box" id="previewEl">AnimateLab</div>
+    </div>
+    <div class="code-output">
+      <div class="code-header">
+        <span>Generated CSS</span>
+        <button class="btn btn-sm btn-accent" id="copyBtn">Copy CSS</button>
+      </div>
+      <pre id="codeOutput"></pre>
+    </div>
+  </div>
+</div>
+
+<div class="copied-toast" id="toast">Copied to clipboard!</div>
+
+<script type="module">
+  // ── State ──
+  const state = {
+    element: 'box',
+    duration: 1,
+    delay: 0,
+    iterations: 1,
+    infinite: false,
+    direction: 'normal',
+    fillMode: 'forwards',
+    easing: 'ease',
+    customBezier: [0.25, 0.1, 0.25, 1.0],
+    animationName: 'animatelab',
+    keyframes: [
+      { offset: 0, transform: 'none', opacity: '1', color: '', scale: '1', rotate: '0deg' },
+      { offset: 100, transform: 'none', opacity: '1', color: '', scale: '1', rotate: '0deg' }
+    ],
+    activeKf: 0
+  };
+
+  // ── Presets ──
+  const presets = [
+    { name: 'Fade In', keyframes: [
+      { offset: 0, opacity: '0', transform: 'none', scale: '1', rotate: '0deg', color: '' },
+      { offset: 100, opacity: '1', transform: 'none', scale: '1', rotate: '0deg', color: '' }
+    ]},
+    { name: 'Fade Out', keyframes: [
+      { offset: 0, opacity: '1', transform: 'none', scale: '1', rotate: '0deg', color: '' },
+      { offset: 100, opacity: '0', transform: 'none', scale: '1', rotate: '0deg', color: '' }
+    ]},
+    { name: 'Slide Up', keyframes: [
+      { offset: 0, opacity: '0', transform: 'translateY(40px)', scale: '1', rotate: '0deg', color: '' },
+      { offset: 100, opacity: '1', transform: 'translateY(0)', scale: '1', rotate: '0deg', color: '' }
+    ]},
+    { name: 'Slide Down', keyframes: [
+      { offset: 0, opacity: '0', transform: 'translateY(-40px)', scale: '1', rotate: '0deg', color: '' },
+      { offset: 100, opacity: '1', transform: 'translateY(0)', scale: '1', rotate: '0deg', color: '' }
+    ]},
+    { name: 'Bounce', keyframes: [
+      { offset: 0, transform: 'translateY(0)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 20, transform: 'translateY(-30px)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 40, transform: 'translateY(0)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 60, transform: 'translateY(-15px)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 80, transform: 'translateY(0)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 100, transform: 'translateY(0)', opacity: '1', scale: '1', rotate: '0deg', color: '' }
+    ]},
+    { name: 'Shake', keyframes: [
+      { offset: 0, transform: 'translateX(0)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 10, transform: 'translateX(-10px)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 20, transform: 'translateX(10px)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 30, transform: 'translateX(-10px)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 40, transform: 'translateX(10px)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 50, transform: 'translateX(-5px)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 60, transform: 'translateX(5px)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 70, transform: 'translateX(-2px)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 80, transform: 'translateX(0)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 100, transform: 'translateX(0)', opacity: '1', scale: '1', rotate: '0deg', color: '' }
+    ]},
+    { name: 'Pulse', keyframes: [
+      { offset: 0, transform: 'none', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 50, transform: 'none', opacity: '1', scale: '1.15', rotate: '0deg', color: '' },
+      { offset: 100, transform: 'none', opacity: '1', scale: '1', rotate: '0deg', color: '' }
+    ]},
+    { name: 'Spin', keyframes: [
+      { offset: 0, transform: 'none', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 100, transform: 'none', opacity: '1', scale: '1', rotate: '360deg', color: '' }
+    ]},
+    { name: 'Flip', keyframes: [
+      { offset: 0, transform: 'perspective(400px) rotateY(0)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 40, transform: 'perspective(400px) rotateY(170deg)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 50, transform: 'perspective(400px) rotateY(190deg)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 80, transform: 'perspective(400px) rotateY(360deg)', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 100, transform: 'perspective(400px) rotateY(360deg)', opacity: '1', scale: '1', rotate: '0deg', color: '' }
+    ]},
+    { name: 'Wiggle', keyframes: [
+      { offset: 0, transform: 'none', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 15, transform: 'none', opacity: '1', scale: '1', rotate: '-5deg', color: '' },
+      { offset: 30, transform: 'none', opacity: '1', scale: '1', rotate: '5deg', color: '' },
+      { offset: 45, transform: 'none', opacity: '1', scale: '1', rotate: '-5deg', color: '' },
+      { offset: 60, transform: 'none', opacity: '1', scale: '1', rotate: '5deg', color: '' },
+      { offset: 75, transform: 'none', opacity: '1', scale: '1', rotate: '-2deg', color: '' },
+      { offset: 100, transform: 'none', opacity: '1', scale: '1', rotate: '0deg', color: '' }
+    ]},
+    { name: 'Zoom In', keyframes: [
+      { offset: 0, transform: 'none', opacity: '0', scale: '0.3', rotate: '0deg', color: '' },
+      { offset: 100, transform: 'none', opacity: '1', scale: '1', rotate: '0deg', color: '' }
+    ]},
+    { name: 'Swing', keyframes: [
+      { offset: 0, transform: 'none', opacity: '1', scale: '1', rotate: '0deg', color: '' },
+      { offset: 20, transform: 'none', opacity: '1', scale: '1', rotate: '15deg', color: '' },
+      { offset: 40, transform: 'none', opacity: '1', scale: '1', rotate: '-10deg', color: '' },
+      { offset: 60, transform: 'none', opacity: '1', scale: '1', rotate: '5deg', color: '' },
+      { offset: 80, transform: 'none', opacity: '1', scale: '1', rotate: '-5deg', color: '' },
+      { offset: 100, transform: 'none', opacity: '1', scale: '1', rotate: '0deg', color: '' }
+    ]}
+  ];
+
+  // ── DOM refs ──
+  const previewEl = document.getElementById('previewEl');
+  const previewArea = document.getElementById('previewArea');
+  const codeOutput = document.getElementById('codeOutput');
+  const presetsGrid = document.getElementById('presetsGrid');
+  const timelineBar = document.getElementById('timelineBar');
+  const kfPropsContainer = document.getElementById('kfPropsContainer');
+  const bezierCanvas = document.getElementById('bezierCanvas');
+  const bezierEditor = document.getElementById('bezierEditor');
+  const toast = document.getElementById('toast');
+
+  let dynamicStyle = document.createElement('style');
+  document.head.appendChild(dynamicStyle);
+
+  // ── Init Presets ──
+  presets.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'preset-btn';
+    btn.textContent = p.name;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.keyframes = JSON.parse(JSON.stringify(p.keyframes));
+      state.activeKf = 0;
+      update();
+    });
+    presetsGrid.appendChild(btn);
+  });
+
+  // ── Element Picker ──
+  document.getElementById('elementPicker').addEventListener('click', (e) => {
+    const btn = e.target.closest('.el-btn');
+    if (!btn) return;
+    document.querySelectorAll('#elementPicker .el-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.element = btn.dataset.el;
+    updateElement();
+    replayAnimation();
+  });
+
+  function updateElement() {
+    previewEl.className = 'preview-element ' + state.element;
+    if (state.element === 'text') {
+      previewEl.textContent = 'AnimateLab';
+    } else if (state.element === 'button') {
+      previewEl.textContent = 'Click Me';
+    } else {
+      previewEl.textContent = '';
+    }
+  }
+
+  // ── Sliders ──
+  const sliders = ['duration', 'delay', 'iterations'];
+  sliders.forEach(id => {
+    const el = document.getElementById(id);
+    const valEl = document.getElementById(id + 'Val');
+    el.addEventListener('input', () => {
+      state[id] = parseFloat(el.value);
+      valEl.textContent = id === 'iterations' ? el.value : el.value + 's';
+      update();
+    });
+  });
+
+  document.getElementById('infiniteCheck').addEventListener('change', (e) => {
+    state.infinite = e.target.checked;
+    document.getElementById('iterations').disabled = e.target.checked;
+    update();
+  });
+
+  // ── Direction ──
+  document.querySelector('.direction-row').addEventListener('click', (e) => {
+    const btn = e.target.closest('.el-btn');
+    if (!btn) return;
+    document.querySelectorAll('.direction-row .el-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.direction = btn.dataset.dir;
+    update();
+  });
+
+  // ── Fill Mode ──
+  document.getElementById('fillMode').addEventListener('change', (e) => {
+    state.fillMode = e.target.value;
+    update();
+  });
+
+  // ── Easing ──
+  document.getElementById('easingPresets').addEventListener('click', (e) => {
+    const btn = e.target.closest('.easing-btn');
+    if (!btn) return;
+    document.querySelectorAll('.easing-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const ease = btn.dataset.ease;
+    if (ease === 'custom') {
+      bezierEditor.style.display = 'flex';
+      state.easing = `cubic-bezier(${state.customBezier.join(', ')})`;
+    } else {
+      bezierEditor.style.display = 'none';
+      state.easing = ease;
+    }
+    update();
+  });
+
+  // ── Bezier Editor ──
+  const ctx = bezierCanvas.getContext('2d');
+  let draggingPoint = null;
+
+  function drawBezier() {
+    const w = 120, h = 120, pad = 10;
+    ctx.clearRect(0, 0, w, h);
+
+    // bg
+    ctx.fillStyle = '#0e0e16';
+    ctx.fillRect(0, 0, w, h);
+
+    // grid
+    ctx.strokeStyle = '#1a1a24';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 4; i++) {
+      const x = pad + (i / 4) * (w - 2 * pad);
+      ctx.beginPath(); ctx.moveTo(x, pad); ctx.lineTo(x, h - pad); ctx.stroke();
+      const y = pad + (i / 4) * (h - 2 * pad);
+      ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(w - pad, y); ctx.stroke();
+    }
+
+    const [x1, y1, x2, y2] = state.customBezier;
+    const toX = v => pad + v * (w - 2 * pad);
+    const toY = v => h - pad - v * (h - 2 * pad);
+
+    // control lines
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(toX(0), toY(0)); ctx.lineTo(toX(x1), toY(y1)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(toX(1), toY(1)); ctx.lineTo(toX(x2), toY(y2)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // curve
+    ctx.strokeStyle = '#6c5ce7';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(toX(0), toY(0));
+    ctx.bezierCurveTo(toX(x1), toY(y1), toX(x2), toY(y2), toX(1), toY(1));
+    ctx.stroke();
+
+    // points
+    [[x1, y1], [x2, y2]].forEach(([px, py], i) => {
+      ctx.beginPath();
+      ctx.arc(toX(px), toY(py), 5, 0, Math.PI * 2);
+      ctx.fillStyle = i === 0 ? '#ff9800' : '#00e676';
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+
+    document.getElementById('p1Val').textContent = `(${x1.toFixed(2)}, ${y1.toFixed(2)})`;
+    document.getElementById('p2Val').textContent = `(${x2.toFixed(2)}, ${y2.toFixed(2)})`;
+    document.getElementById('bezierFunc').textContent = `cubic-bezier(${state.customBezier.map(v => v.toFixed(2)).join(', ')})`;
+  }
+
+  bezierCanvas.addEventListener('mousedown', (e) => {
+    const rect = bezierCanvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) / rect.width;
+    const my = 1 - (e.clientY - rect.top) / rect.height;
+    const [x1, y1, x2, y2] = state.customBezier;
+    const d1 = Math.hypot(mx - x1, my - y1);
+    const d2 = Math.hypot(mx - x2, my - y2);
+    if (d1 < 0.15) draggingPoint = 0;
+    else if (d2 < 0.15) draggingPoint = 1;
+    else draggingPoint = null;
+  });
+
+  bezierCanvas.addEventListener('mousemove', (e) => {
+    if (draggingPoint === null) return;
+    const rect = bezierCanvas.getBoundingClientRect();
+    let mx = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    let my = 1 - (e.clientY - rect.top) / rect.height;
+    my = Math.max(-0.5, Math.min(1.5, my));
+    if (draggingPoint === 0) {
+      state.customBezier[0] = parseFloat(mx.toFixed(2));
+      state.customBezier[1] = parseFloat(my.toFixed(2));
+    } else {
+      state.customBezier[2] = parseFloat(mx.toFixed(2));
+      state.customBezier[3] = parseFloat(my.toFixed(2));
+    }
+    state.easing = `cubic-bezier(${state.customBezier.map(v => v.toFixed(2)).join(', ')})`;
+    drawBezier();
+    update();
+  });
+
+  window.addEventListener('mouseup', () => { draggingPoint = null; });
+
+  // ── Keyframes Editor ──
+  function renderTimeline() {
+    timelineBar.innerHTML = '';
+    state.keyframes.forEach((kf, i) => {
+      const marker = document.createElement('div');
+      marker.className = 'kf-marker' + (i === state.activeKf ? ' active' : '');
+      marker.style.left = kf.offset + '%';
+      marker.addEventListener('click', (e) => {
+        e.stopPropagation();
+        state.activeKf = i;
+        renderTimeline();
+        renderKfProps();
+      });
+      // Drag
+      let dragging = false;
+      marker.addEventListener('mousedown', (e) => {
+        if (kf.offset === 0 || kf.offset === 100) return; // can't drag endpoints
+        dragging = true;
+        e.preventDefault();
+        const onMove = (ev) => {
+          if (!dragging) return;
+          const rect = timelineBar.getBoundingClientRect();
+          let pct = Math.round(((ev.clientX - rect.left) / rect.width) * 100);
+          pct = Math.max(1, Math.min(99, pct));
+          kf.offset = pct;
+          marker.style.left = pct + '%';
+          state.keyframes.sort((a, b) => a.offset - b.offset);
+          state.activeKf = state.keyframes.indexOf(kf);
+          update();
+        };
+        const onUp = () => {
+          dragging = false;
+          window.removeEventListener('mousemove', onMove);
+          window.removeEventListener('mouseup', onUp);
+          renderTimeline();
+        };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+      });
+      timelineBar.appendChild(marker);
+    });
+    renderKfProps();
+  }
+
+  function renderKfProps() {
+    const kf = state.keyframes[state.activeKf];
+    if (!kf) return;
+    kfPropsContainer.innerHTML = `
+      <div class="kf-props">
+        <div class="kf-prop"><label>Offset</label><input type="text" value="${kf.offset}%" data-key="offset" ${kf.offset === 0 || kf.offset === 100 ? 'disabled' : ''}/></div>
+        <div class="kf-prop"><label>Opacity</label><input type="text" value="${kf.opacity}" data-key="opacity"/></div>
+        <div class="kf-prop"><label>Transform</label><input type="text" value="${kf.transform}" data-key="transform" style="width:120px"/></div>
+        <div class="kf-prop"><label>Scale</label><input type="text" value="${kf.scale}" data-key="scale"/></div>
+        <div class="kf-prop"><label>Rotate</label><input type="text" value="${kf.rotate}" data-key="rotate"/></div>
+        <div class="kf-prop"><label>Color</label><input type="text" value="${kf.color || ''}" data-key="color" placeholder="#hex"/></div>
+      </div>
+    `;
+    kfPropsContainer.querySelectorAll('input').forEach(input => {
+      input.addEventListener('change', () => {
+        const key = input.dataset.key;
+        let val = input.value;
+        if (key === 'offset') val = parseInt(val);
+        kf[key] = val;
+        if (key === 'offset') {
+          state.keyframes.sort((a, b) => a.offset - b.offset);
+          state.activeKf = state.keyframes.indexOf(kf);
+          renderTimeline();
+        }
+        update();
+      });
+    });
+  }
+
+  document.getElementById('addKfBtn').addEventListener('click', () => {
+    const offsets = state.keyframes.map(k => k.offset);
+    let newOffset = 50;
+    while (offsets.includes(newOffset)) newOffset += 5;
+    if (newOffset >= 100) newOffset = 50;
+    state.keyframes.push({
+      offset: newOffset,
+      transform: 'none',
+      opacity: '1',
+      color: '',
+      scale: '1',
+      rotate: '0deg'
+    });
+    state.keyframes.sort((a, b) => a.offset - b.offset);
+    state.activeKf = state.keyframes.findIndex(k => k.offset === newOffset);
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    update();
+  });
+
+  document.getElementById('removeKfBtn').addEventListener('click', () => {
+    if (state.keyframes.length <= 2) return;
+    const kf = state.keyframes[state.activeKf];
+    if (kf.offset === 0 || kf.offset === 100) return;
+    state.keyframes.splice(state.activeKf, 1);
+    state.activeKf = Math.min(state.activeKf, state.keyframes.length - 1);
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    update();
+  });
+
+  // ── Timeline click to add ──
+  timelineBar.addEventListener('click', (e) => {
+    const rect = timelineBar.getBoundingClientRect();
+    const pct = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+    if (state.keyframes.some(k => Math.abs(k.offset - pct) < 3)) return;
+    state.keyframes.push({
+      offset: pct,
+      transform: 'none',
+      opacity: '1',
+      color: '',
+      scale: '1',
+      rotate: '0deg'
+    });
+    state.keyframes.sort((a, b) => a.offset - b.offset);
+    state.activeKf = state.keyframes.findIndex(k => k.offset === pct);
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    update();
+  });
+
+  // ── Generate CSS ──
+  function generateCSS() {
+    let css = `@keyframes ${state.animationName} {\n`;
+    state.keyframes.forEach(kf => {
+      const props = [];
+      const transforms = [];
+      if (kf.transform && kf.transform !== 'none') transforms.push(kf.transform);
+      if (kf.scale && kf.scale !== '1') transforms.push(`scale(${kf.scale})`);
+      if (kf.rotate && kf.rotate !== '0deg') transforms.push(`rotate(${kf.rotate})`);
+      if (transforms.length > 0) props.push(`    transform: ${transforms.join(' ')};`);
+      if (kf.opacity && kf.opacity !== '1') props.push(`    opacity: ${kf.opacity};`);
+      if (kf.color) props.push(`    color: ${kf.color};`);
+      // If no props at all, still show the keyframe with a placeholder
+      const label = kf.offset === 0 ? '  0%' : kf.offset === 100 ? '  100%' : `  ${kf.offset}%`;
+      if (props.length === 0) {
+        // still emit the block, might just be identity frame
+        css += `${label} {\n    /* identity */\n  }\n`;
+      } else {
+        css += `${label} {\n${props.join('\n')}\n  }\n`;
+      }
+    });
+    css += `}\n\n`;
+
+    const iterCount = state.infinite ? 'infinite' : state.iterations;
+    css += `.animated-element {\n`;
+    css += `  animation: ${state.animationName} ${state.duration}s ${state.easing} ${state.delay}s ${iterCount} ${state.direction} ${state.fillMode};\n`;
+    css += `}`;
+
+    return css;
+  }
+
+  function highlightCSS(css) {
+    return css
+      .replace(/@keyframes/g, '<span class="kw">@keyframes</span>')
+      .replace(/(\d+(\.\d+)?)(s|%|deg|px)/g, '<span class="num">$1$3</span>')
+      .replace(/(animation|transform|opacity|color|scale)(?=\s*:)/g, '<span class="prop">$1</span>')
+      .replace(/(ease-in-out|ease-in|ease-out|ease|linear|infinite|normal|reverse|alternate|forwards|backwards|both|none)/g, '<span class="str">$1</span>')
+      .replace(/(cubic-bezier)/g, '<span class="kw">$1</span>');
+  }
+
+  // ── Apply Animation ──
+  function applyAnimation() {
+    let kfCSS = `@keyframes ${state.animationName} {\n`;
+    state.keyframes.forEach(kf => {
+      const transforms = [];
+      if (kf.transform && kf.transform !== 'none') transforms.push(kf.transform);
+      if (kf.scale && kf.scale !== '1') transforms.push(`scale(${kf.scale})`);
+      if (kf.rotate && kf.rotate !== '0deg') transforms.push(`rotate(${kf.rotate})`);
+      kfCSS += `  ${kf.offset}% {\n`;
+      if (transforms.length > 0) kfCSS += `    transform: ${transforms.join(' ')};\n`;
+      if (kf.opacity) kfCSS += `    opacity: ${kf.opacity};\n`;
+      if (kf.color) kfCSS += `    color: ${kf.color}; background-color: ${kf.color};\n`;
+      kfCSS += `  }\n`;
+    });
+    kfCSS += `}\n`;
+
+    const iterCount = state.infinite ? 'infinite' : state.iterations;
+    kfCSS += `#previewEl {\n`;
+    kfCSS += `  animation: ${state.animationName} ${state.duration}s ${state.easing} ${state.delay}s ${iterCount} ${state.direction} ${state.fillMode} !important;\n`;
+    kfCSS += `}\n`;
+
+    dynamicStyle.textContent = kfCSS;
+  }
+
+  function replayAnimation() {
+    previewEl.style.animation = 'none';
+    dynamicStyle.textContent = '';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        applyAnimation();
+      });
+    });
+  }
+
+  // ── Master Update ──
+  function update() {
+    renderTimeline();
+    const css = generateCSS();
+    codeOutput.innerHTML = highlightCSS(css);
+    replayAnimation();
+    drawBezier();
+  }
+
+  // ── Copy ──
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    navigator.clipboard.writeText(generateCSS()).then(() => {
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1500);
+    });
+  });
+
+  // ── Reset ──
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    state.keyframes = [
+      { offset: 0, transform: 'none', opacity: '1', color: '', scale: '1', rotate: '0deg' },
+      { offset: 100, transform: 'none', opacity: '1', color: '', scale: '1', rotate: '0deg' }
+    ];
+    state.activeKf = 0;
+    state.duration = 1;
+    state.delay = 0;
+    state.iterations = 1;
+    state.infinite = false;
+    state.direction = 'normal';
+    state.fillMode = 'forwards';
+    state.easing = 'ease';
+    document.getElementById('duration').value = 1;
+    document.getElementById('durationVal').textContent = '1s';
+    document.getElementById('delay').value = 0;
+    document.getElementById('delayVal').textContent = '0s';
+    document.getElementById('iterations').value = 1;
+    document.getElementById('iterationsVal').textContent = '1';
+    document.getElementById('infiniteCheck').checked = false;
+    document.getElementById('fillMode').value = 'forwards';
+    document.querySelectorAll('.direction-row .el-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-dir="normal"]').classList.add('active');
+    document.querySelectorAll('.easing-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-ease="ease"]').classList.add('active');
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    bezierEditor.style.display = 'none';
+    update();
+  });
+
+  // ── Fullscreen ──
+  document.getElementById('fullscreenBtn').addEventListener('click', () => {
+    previewArea.classList.toggle('fullscreen');
+    const isFs = previewArea.classList.contains('fullscreen');
+    document.getElementById('fullscreenBtn').textContent = isFs ? 'Exit' : 'Fullscreen';
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && previewArea.classList.contains('fullscreen')) {
+      previewArea.classList.remove('fullscreen');
+      document.getElementById('fullscreenBtn').textContent = 'Fullscreen';
+    }
+  });
+
+  // ── Init ──
+  updateElement();
+  // Load first preset by default
+  state.keyframes = JSON.parse(JSON.stringify(presets[0].keyframes));
+  document.querySelector('.preset-btn').classList.add('active');
+  update();
+</script>
+</body>
+</html>
