@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doing a Backflip! 🤸</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: linear-gradient(to bottom, #4facfe 0%, #87e0fd 45%, #cdeefd 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      color: #1a3c5e;
+    }
+
+    h1 {
+      margin-top: 32px;
+      font-size: clamp(1.4rem, 4vw, 2.4rem);
+      font-weight: 800;
+      text-shadow: 0 2px 6px rgba(255, 255, 255, 0.6);
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      font-size: 0.95rem;
+      opacity: 0.7;
+    }
+
+    /* Floating clouds for some atmosphere */
+    .cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 50%;
+      filter: blur(1px);
+      pointer-events: none;
+    }
+    .cloud::before,
+    .cloud::after {
+      content: "";
+      position: absolute;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 50%;
+    }
+    .cloud1 { width: 90px; height: 90px; top: 18%; left: 12%; animation: drift 22s linear infinite; }
+    .cloud1::before { width: 60px; height: 60px; top: 20px; left: -35px; }
+    .cloud1::after  { width: 70px; height: 70px; top: 15px; left: 50px; }
+    .cloud2 { width: 70px; height: 70px; top: 30%; right: 14%; animation: drift 30s linear infinite reverse; }
+    .cloud2::before { width: 50px; height: 50px; top: 18px; left: -28px; }
+    .cloud2::after  { width: 55px; height: 55px; top: 12px; left: 42px; }
+
+    @keyframes drift {
+      0%   { transform: translateX(0); }
+      50%  { transform: translateX(40px); }
+      100% { transform: translateX(0); }
+    }
+
+    /* Stage holds the action area */
+    .stage {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    /* The ground / floor line */
+    .ground {
+      position: absolute;
+      bottom: 18%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      max-width: 520px;
+      height: 6px;
+      border-radius: 6px;
+      background: linear-gradient(to right,
+        rgba(76, 110, 70, 0) 0%,
+        #5fa052 20%,
+        #4c8a42 50%,
+        #5fa052 80%,
+        rgba(76, 110, 70, 0) 100%);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+    }
+
+    .grass {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 18%;
+      background: linear-gradient(to bottom, #6cb35c 0%, #4c8a42 100%);
+    }
+
+    /* Shadow under the character: scales/fades while jumping */
+    .shadow {
+      position: absolute;
+      bottom: calc(18% - 8px);
+      left: 50%;
+      width: 90px;
+      height: 22px;
+      background: rgba(0, 0, 0, 0.28);
+      border-radius: 50%;
+      filter: blur(3px);
+      transform: translateX(-50%);
+      transform-origin: center;
+      animation: shadowPulse 2.4s ease-in-out infinite;
+    }
+
+    /* The character anchored just above the ground */
+    .character {
+      position: absolute;
+      bottom: 18%;
+      left: 50%;
+      width: 80px;
+      height: 110px;
+      transform: translateX(-50%);
+      transform-origin: center bottom;
+      /* jumpArc moves up/down and supplies the takeoff/landing squash via scale */
+      animation: jumpArc 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+
+    /* Inner wrapper handles the full 360 rotation, decoupled from the arc */
+    .character .spinner {
+      width: 100%;
+      height: 100%;
+      transform-origin: center center;
+      animation: flip 2.4s ease-in-out infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* CSS-built blob/stick figure */
+    .figure {
+      position: relative;
+      width: 60px;
+      height: 100px;
+    }
+
+    .head {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 38px;
+      height: 38px;
+      background: radial-gradient(circle at 35% 30%, #ffe0a3, #ffcb6b);
+      border: 3px solid #e8a93c;
+      border-radius: 50%;
+      z-index: 3;
+    }
+    .head::before { /* eyes */
+      content: "";
+      position: absolute;
+      top: 14px;
+      left: 9px;
+      width: 5px;
+      height: 5px;
+      background: #3a2a12;
+      border-radius: 50%;
+      box-shadow: 13px 0 0 #3a2a12;
+    }
+    .head::after { /* smile */
+      content: "";
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 16px;
+      height: 8px;
+      border: 0 solid #b9722b;
+      border-bottom-width: 3px;
+      border-radius: 0 0 16px 16px;
+    }
+
+    .body {
+      position: absolute;
+      top: 34px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 28px;
+      height: 40px;
+      background: linear-gradient(to bottom, #ff7eb3, #ff5e93);
+      border: 3px solid #e74e7e;
+      border-radius: 16px;
+      z-index: 2;
+    }
+
+    .arm {
+      position: absolute;
+      top: 40px;
+      width: 10px;
+      height: 30px;
+      background: #ff5e93;
+      border: 2px solid #e74e7e;
+      border-radius: 8px;
+      z-index: 1;
+    }
+    .arm.left  { left: 6px;  transform: rotate(28deg); }
+    .arm.right { right: 6px; transform: rotate(-28deg); }
+
+    .leg {
+      position: absolute;
+      bottom: 0;
+      width: 11px;
+      height: 32px;
+      background: #4a90d9;
+      border: 2px solid #3a73ad;
+      border-radius: 8px;
+      z-index: 1;
+    }
+    .leg.left  { left: 16px; transform: rotate(10deg); }
+    .leg.right { right: 16px; transform: rotate(-10deg); }
+
+    /* Jump arc: up then down, with squash-and-stretch */
+    @keyframes jumpArc {
+      0%   { transform: translateX(-50%) translateY(0)     scaleX(1)    scaleY(1);    }   /* stand */
+      10%  { transform: translateX(-50%) translateY(14px)  scaleX(1.18) scaleY(0.78); }   /* crouch / squash */
+      22%  { transform: translateX(-50%) translateY(-20px) scaleX(0.86) scaleY(1.2);  }   /* launch / stretch */
+      50%  { transform: translateX(-50%) translateY(-180px) scaleX(1)   scaleY(1);    }   /* apex */
+      78%  { transform: translateX(-50%) translateY(-20px) scaleX(0.9)  scaleY(1.12); }   /* falling */
+      90%  { transform: translateX(-50%) translateY(12px)  scaleX(1.2)  scaleY(0.76); }   /* landing squash */
+      100% { transform: translateX(-50%) translateY(0)     scaleX(1)    scaleY(1);    }   /* recover */
+    }
+
+    /* Full 360 backflip rotation (negative = backward) timed with the air phase */
+    @keyframes flip {
+      0%, 18%  { transform: rotate(0deg); }
+      50%      { transform: rotate(-180deg); }
+      82%      { transform: rotate(-360deg); }
+      100%     { transform: rotate(-360deg); }
+    }
+
+    /* Shadow shrinks and fades as the character rises */
+    @keyframes shadowPulse {
+      0%   { transform: translateX(-50%) scale(1);    opacity: 0.32; }
+      10%  { transform: translateX(-50%) scale(1.12); opacity: 0.4;  }
+      50%  { transform: translateX(-50%) scale(0.45); opacity: 0.12; }
+      90%  { transform: translateX(-50%) scale(1.12); opacity: 0.4;  }
+      100% { transform: translateX(-50%) scale(1);    opacity: 0.32; }
+    }
+
+    .controls {
+      position: relative;
+      z-index: 5;
+      margin-bottom: 28px;
+    }
+
+    button {
+      font: inherit;
+      font-weight: 700;
+      font-size: 1rem;
+      color: #fff;
+      background: linear-gradient(135deg, #ff7eb3, #ff5e93);
+      border: none;
+      border-radius: 999px;
+      padding: 12px 28px;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(231, 78, 126, 0.45);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    button:hover  { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(231, 78, 126, 0.5); }
+    button:active { transform: translateY(1px); }
+  </style>
+</head>
+<body>
+  <h1>Doing a Backflip! 🤸</h1>
+  <p class="subtitle">A cute little gymnast flipping forever</p>
+
+  <div class="cloud cloud1"></div>
+  <div class="cloud cloud2"></div>
+
+  <div class="stage">
+    <div class="shadow" id="shadow"></div>
+
+    <div class="character" id="character">
+      <div class="spinner" id="spinner">
+        <div class="figure">
+          <div class="head"></div>
+          <div class="body"></div>
+          <div class="arm left"></div>
+          <div class="arm right"></div>
+          <div class="leg left"></div>
+          <div class="leg right"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ground"></div>
+    <div class="grass"></div>
+  </div>
+
+  <div class="controls">
+    <button id="replay" type="button">Replay 🤸</button>
+  </div>
+
+  <script>
+    // Restart all three synced animations by briefly removing them,
+    // forcing reflow, then re-applying. Keeps everything in lock-step.
+    const targets = [
+      document.getElementById("character"),
+      document.getElementById("spinner"),
+      document.getElementById("shadow")
+    ];
+
+    document.getElementById("replay").addEventListener("click", function () {
+      targets.forEach(function (el) {
+        el.style.animation = "none";
+      });
+      // Force reflow so the browser registers the "none" state.
+      void document.body.offsetWidth;
+      targets.forEach(function (el) {
+        el.style.animation = "";
+      });
+    });
+  </script>
+</body>
+</html>
