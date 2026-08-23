@@ -2,7 +2,7 @@
 
 > Build CSS keyframe animations visually and copy the generated `@keyframes` rule.
 
-**[Live demo](https://su-animatelab.vercel.app)**
+**[Live demo](https://animatelab-mlx.vercel.app)**
 
 Writing a keyframe animation usually means editing a stylesheet, reloading, and squinting at whether the timing feels right. AnimateLab keeps the animation running in a live preview while you edit it: add keyframes at any percentage offset, set opacity, transform, scale, rotation, and color on each, and adjust duration, delay, iteration count, direction, and fill mode. The `@keyframes` block plus the `animation` shorthand are regenerated as you go, syntax-highlighted and ready to copy.
 
@@ -30,4 +30,4 @@ npm run dev
 
 ---
 
-Part of a series of 91 small web apps. [Browse them all](https://su-slopmachine.vercel.app).
+Part of a series of 91 small web apps. [Browse them all](https://lorenzoylosada.vercel.app).
